@@ -22,13 +22,6 @@ type
 let stream = newFileStream(paramStr(1), mode = fmRead)
 
 
-proc process_ifd_entry(): ifd_entry =
-  let tag = stream.readInt16()
-  let field_type = stream.readInt16()
-  let type_count = stream.readInt32()
-  let value_file_offset = stream.readInt32()
-  result = ifd_entry(tag: tag, field_type: field_type, type_count: type_count, value_file_offset: value_file_offset)
-
 # Process image file header
 var byteorder: array[2, char]
 discard stream.readData(byteorder.addr, 2)
@@ -40,22 +33,64 @@ let ifh = image_file_header(byteorder: byteorder, forty_two: forty_two, byte_off
 # Set position to the byte offset (first image file directory)
 setPosition(stream, byte_offset)
 
-
-var num_fields = stream.readInt16()
-var ifd_entries = newSeq[ifd_entry](num_fields)
-for i in countup(1, num_fields):
-  var ifd_entry = process_ifd_entry()
-  echo ifd_entry
-  ifd_entries.add(ifd_entry)
-var offset = stream.readInt32()
-  
-echo offset
+proc process_ifd_entry(): ifd_entry =
+  let tag = stream.readInt16()
+  let field_type = stream.readInt16()
+  let type_count = stream.readInt32()
+  let value_file_offset = stream.readInt32()
+  result = ifd_entry(tag: tag, field_type: field_type, type_count: type_count, value_file_offset: value_file_offset)
 
 
-setPosition(stream, 8)
-for i in countup(1, 90750):
-  var val = stream.readUInt8()
-  echo val
+proc process_ifd(): image_file_directory =
+  let num_fields = stream.readInt16()
+  var ifd_entries = newSeq[ifd_entry](num_fields)
+  for i in countup(1, num_fields):
+    let ifd_entry = process_ifd_entry()
+    echo ifd_entry
+    ifd_entries.add(ifd_entry)
+
+
+proc process_tiff(): void =
+  var counter = 0
+  var offset: int32 = -1
+  var ifds = newSeq[image_file_directory]()
+  while offset != 0:
+    let ifd = process_ifd()
+    offset = stream.readInt32()
+    setPosition(stream, offset)
+
+    echo "offset: ", offset
+    counter += 1
+    echo "counter: ", counter
+
+process_tiff()
+
+
+
+
+
+
+
+
+
+
+
+
+# var num_fields = stream.readInt16()
+# var ifd_entries = newSeq[ifd_entry](num_fields)
+# for i in countup(1, num_fields):
+#   var ifd_entry = process_ifd_entry()
+#   echo ifd_entry
+#   ifd_entries.add(ifd_entry)
+# var offset = stream.readInt32()
+#   
+# echo offset
+# 
+# 
+# setPosition(stream, 8)
+# for i in countup(1, 90750):
+#   var val = stream.readUInt8()
+#   echo val
 
 
 # var byteorder: array[2, char]
