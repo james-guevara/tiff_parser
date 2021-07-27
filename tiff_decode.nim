@@ -48,9 +48,11 @@ proc process_ifd(): image_file_directory =
     let ifd_entry = process_ifd_entry()
     echo ifd_entry
     ifd_entries.add(ifd_entry)
+  result = image_file_directory(num_fields: num_fields, ifd_entries: ifd_entries)
 
 
-proc process_tiff(): void =
+
+proc process_tiff(): seq[image_file_directory] =
   var counter = 0
   var offset: int32 = -1
   var ifds = newSeq[image_file_directory]()
@@ -58,71 +60,18 @@ proc process_tiff(): void =
     let ifd = process_ifd()
     offset = stream.readInt32()
     setPosition(stream, offset)
-
     echo "offset: ", offset
     counter += 1
     echo "counter: ", counter
+    ifds.add(ifd)
+  return ifds
 
-process_tiff()
-
-
-
-
-
+var ifds = process_tiff()
+echo ifds
 
 
+# Locate ifd_entries with certain tags in them
 
-
-
-
-
-# var num_fields = stream.readInt16()
-# var ifd_entries = newSeq[ifd_entry](num_fields)
-# for i in countup(1, num_fields):
-#   var ifd_entry = process_ifd_entry()
-#   echo ifd_entry
-#   ifd_entries.add(ifd_entry)
-# var offset = stream.readInt32()
-#   
-# echo offset
-# 
-# 
-# setPosition(stream, 8)
-# for i in countup(1, 90750):
-#   var val = stream.readUInt8()
-#   echo val
-
-
-# var byteorder: array[2, char]
-# discard stream.readData(byteorder.addr, 2)
-# echo "byteorder: ", byteorder
-# 
-# var forty_two = stream.readInt16()
-# echo "fortytwo: ", fortytwo
-# var forty_two_swap: int16
-# swapEndian16(addr(forty_two_swap), addr(fortytwo))
-# echo "fortytwo_swap: ", forty_two_swap
-# 
-# var offset_ifd = stream.readInt32()
-# echo "offset_ifd: ", offset_ifd
-# var offset_ifd_swap: int32
-# swapEndian16(addr(offset_ifd_swap), addr(offset_ifd))
-# echo "offset_ifd_swap: ", offset_ifd_swap
-# 
-# setPosition(stream, offset_ifd)
-# 
-# var num_dirs = stream.readInt16()
-# 
-# var tag = stream.readInt16()
-# var field_type = stream.readInt16()
-# var num_vals = stream.readInt32()
-# var offset = stream.readInt32()
-# 
-# echo "num_dirs: ", num_dirs
-# echo "tag: ", tag
-# echo "field_type: ", field_type
-# echo "num_vals: ", num_vals
-# echo "offset: ", offset
 
 
 
