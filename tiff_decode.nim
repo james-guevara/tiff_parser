@@ -163,6 +163,9 @@ container.add(control)
 var button = newButton("Next")
 container.add(button)
 
+var averageButton = newButton("Get stack average")
+container.add(averageButton)
+
 
 var image = newImage()
 image.resize(imageLength, imageWidth)
@@ -196,9 +199,33 @@ button.onClick = proc(event: ClickEvent) =
   clickCounter += 1
   control.show() # YES, this changes the control
 
+var textArea = newTextArea("TextArea\pLine 2\p")
+container.add(textArea)
+
+averageButton.onClick = proc(event: ClickEvent) =
+  var average_red = 0.0
+  for i in countup(0, imageLength - 1):
+    for j in countup(0, imageWidth - 1):
+      var red   = imageArray[i,j,0,0]
+      var green = imageArray[i,j,1,0]
+      var blue  = imageArray[i,j,2,0]
+      # image.canvas.setPixel(i, j, rgb(red, green, blue))
+      average_red += red.float
+  average_red = average_red/(imageWidth.float*imageLength.float)
+  textArea.addLine($average_red)
+  
 
 window.show()
 app.run()
+
+# Functionality to add:
+# All the basic image statistical methods (average, median, etc. etc. for single images and movies/stacks)
+# More image formats to be decoded (including gif, png, jpeg)
+# Basic image operations like flip, rotate, etc.
+# FFTs and image filters
+
+
+
 # 
 # # Window 2
 # var window_2 = newWindow()
